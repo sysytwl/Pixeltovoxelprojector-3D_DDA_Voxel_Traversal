@@ -1,0 +1,17 @@
+#version 450
+
+layout(set = 0, binding = 0) uniform sampler2D inputImage;
+layout(set = 0, binding = 1) writeonly uniform image2D outputImage;
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+void main() {
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+    
+    vec4 color = texture(inputImage, pixelCoords / vec2(textureSize(inputImage, 0)));
+    
+    // Example image processing: invert colors
+    color.rgb = vec3(1.0) - color.rgb;
+
+    imageStore(outputImage, pixelCoords, color);
+}
