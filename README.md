@@ -17,4 +17,14 @@ time cost for dissolve: 159224
 time cost for edge dect: 163835
 PSRAM used: 3801600 bytes, free: 390491 bytes
 RAM used: 23600 bytes, free: 351976 bytes
+
+speedup:
+PSRAM found. Size: 4192123 bytes
+time cost for init cam ray lut: 979045
+time cost for gray trans: 80377
+time cost for binary: 76175
+time cost for dissolve: 159285
+time cost for edge dect: 117709
+PSRAM used: 3801600 bytes, free: 390491 bytes
+RAM used: 23600 bytes, free: 351976 bytes
 ```

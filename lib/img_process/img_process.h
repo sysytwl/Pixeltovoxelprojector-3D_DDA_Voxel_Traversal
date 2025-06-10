@@ -37,19 +37,23 @@ public:
         }
     }
 
-    void edge_dection(uint8_t* img, uint16_t block_width=3){
+    void edge_dection(uint8_t* img, uint16_t block_width=4){
         for (uint16_t y=0; y<_height; y+=block_width){
+            size_t tmp_blockline=y*_width;
             for (uint16_t x=0; x<_width; x+=block_width){
-                uint8_t xorResult = 0;
-                for (uint16_t j=0; j<block_width; j++) {//Compute XOR for the 3x3 block centered at (x, y)
+                size_t tmp_block = tmp_blockline + x;
+                uint32_t xorResult = 0;
+                for (uint16_t j=0; j<block_width; j++) {
+                    size_t tmpline = tmp_block + j*_width + x;
                     for (uint16_t i=0; i<=block_width; i++){
-                        xorResult += img[(y+j)*_width + (x+i)];
+                        xorResult += img[tmpline+i];
                     }
                 }
-                xorResult = (xorResult >= block_width*block_width)||(!xorResult) ? 0 : 1;
+                xorResult = (xorResult >= 16)||(xorResult==0) ? 0 : 1;
                 for (uint16_t j=0; j<block_width; j++){
+                    size_t tmpline = tmp_block + j*_width + x;
                     for (uint16_t i=0; i<=block_width; i++) {
-                        img[(y+j)*_width + (x+i)] = xorResult;
+                        img[tmpline+i] = xorResult;
                     }
                 }
             }
