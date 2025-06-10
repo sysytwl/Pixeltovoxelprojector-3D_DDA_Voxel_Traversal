@@ -6,6 +6,13 @@ struct Vec3 {
     float x, y, z;
 };
 
+// Define ImageGray struct to represent a grayscale image
+struct ImageGray {
+    int width;
+    int height;
+    uint8_t* pixels;
+};
+
 class ImageVoxelProcessor {
 public:
     // Process a grayscale image and accumulate into a voxel grid
@@ -87,6 +94,30 @@ public:
                 }
             }
         }
+    }
+
+  float motion_threshold;
+    struct MotionMask {
+      int width;
+      int height;
+      // For ESP32, use a pointer to preallocated bool array
+      bool *changed;
+      float *diff;
+    };
+
+    // Detect motion between two images, output mask and diff arrays
+    MotionMask detect_motion(const ImageGray &prev, const ImageGray &next, bool *changed, float *diff) {
+      MotionMask mm;
+      mm.width = prev.width;
+      mm.height = prev.height;
+      mm.changed = changed;
+      mm.diff = diff;
+      for (int i = 0; i < mm.width * mm.height; i++) {
+        float d = fabsf((float)prev.pixels[i] - (float)next.pixels[i]);
+        mm.diff[i] = d;
+        mm.changed[i] = (d > motion_threshold);
+      }
+      return mm;
     }
 
     // Ray-AABB intersection
