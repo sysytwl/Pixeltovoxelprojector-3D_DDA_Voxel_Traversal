@@ -19,7 +19,7 @@ public:
         }
     }
 
-    uint8_t dissolve(uint8_t* img, uint16_t block_width=3) {
+    void dissolve(uint8_t* img, uint16_t block_width=3) {
         for (uint16_t y=0; y<_height; y+=block_width){
             for (uint16_t x=0; x<_width; x+=block_width){
                 uint8_t tmpResult = 1;

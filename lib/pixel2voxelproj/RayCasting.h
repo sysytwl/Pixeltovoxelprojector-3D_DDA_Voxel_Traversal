@@ -184,7 +184,12 @@ private:
       delete[] ray_cam_lut;
       ray_cam_lut = nullptr;
     }
-    ray_cam_lut = new Vec3[width * height];
+    ray_cam_lut = (Vec3*)ps_malloc(width * height * sizeof(Vec3));
+    if (!ray_cam_lut) {
+      printf("error \n");
+      while(1);
+    }
+  
     float fov_rad = deg2rad(fov_degrees);
     float focal_len = (width * 0.5f) / tanf(fov_rad * 0.5f);
     for (int v = 0; v < height; v++) {
