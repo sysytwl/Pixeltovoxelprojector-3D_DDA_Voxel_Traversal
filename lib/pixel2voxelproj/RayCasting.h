@@ -15,6 +15,8 @@
 #include <math.h>
 #include <stddef.h>
 
+#include <Arduino.h>
+
 #include "math_helpers.h"
 
 
@@ -33,7 +35,7 @@ public:
     precompute_ray_cam_lut(width, height, fov_degrees);
   }
 
-  uint32_t RayMatch(uint8_t *img, Vec3 *RayList, bool world=false, float yaw=0, float pitch=0, float roll=0){
+  uint32_t RayMatch(uint8_t *img, float16_vec3_t *RayList, bool world=false, float yaw=0, float pitch=0, float roll=0){
     uint32_t RayListlen = 0;
     for (uint16_t y=0; y<_height; y++){
       for (uint16_t x=0; x<_width; x++){
@@ -48,8 +50,8 @@ public:
     if(world){
       Mat3 cam_rot = rotation_matrix_yaw_pitch_roll(yaw, pitch, roll);
       for (uint32_t i = 0; i < RayListlen; i++) {
-        RayList[i] = mat3_mul_vec3(cam_rot, RayList[i]);
-        RayList[i] = normalize(RayList[i]);
+        //RayList[i] = mat3_mul_vec3(cam_rot, RayList[i]);
+        //RayList[i] = normalize(RayList[i]);
       }
     }
 
@@ -177,16 +179,13 @@ private:
   Vec3 grid_center;
 
   float alpha;
-  Vec3* ray_cam_lut = nullptr;
+  float16_vec3_t *ray_cam_lut;
 
   void precompute_ray_cam_lut(int width, int height, float fov_degrees) {
-    if (ray_cam_lut) {
-      delete[] ray_cam_lut;
-      ray_cam_lut = nullptr;
-    }
-    ray_cam_lut = (Vec3*)ps_malloc(width * height * sizeof(Vec3));
+    // Try heap_caps_malloc, fallback to malloc for debugging
+    ray_cam_lut = (float16_vec3_t*)heap_caps_malloc(width * height * sizeof(float16_vec3_t), MALLOC_CAP_SPIRAM);
     if (!ray_cam_lut) {
-      printf("error \n");
+      printf("Both heap_caps_malloc and malloc failed! width=%d height=%d size=%zu\n", width, height, width * height * sizeof(float16_vec3_t));
       while(1);
     }
   
@@ -197,7 +196,9 @@ private:
         float x = ((float)u - 0.5f * width);
         float y = -((float)v - 0.5f * height);
         float z = -focal_len;
-        ray_cam_lut[v * width + u] = normalize({x, y, z});
+
+        Vec3 tmpNormaized = normalize({x, y, z});
+        ray_cam_lut[v * width + u] = {float32_to_float16(tmpNormaized.x),float32_to_float16(tmpNormaized.y),float32_to_float16(tmpNormaized.z)};
       }
     }
   }
