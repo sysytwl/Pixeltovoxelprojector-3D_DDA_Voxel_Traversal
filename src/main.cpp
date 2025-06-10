@@ -52,6 +52,9 @@ void setup(){
     img_timecost = micros() - img_timecost;
     printf("time cost for edge dect: %d\n", img_timecost);
 
+    printf("PSRAM used: %u bytes, free: %u bytes\n", ESP.getPsramSize() - ESP.getFreePsram(), ESP.getFreePsram());
+    printf("RAM used: %u bytes, free: %u bytes\n", ESP.getHeapSize() - ESP.getFreeHeap(), ESP.getFreeHeap());
+
     //rm.RayMatch();
 };
 

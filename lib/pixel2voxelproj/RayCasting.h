@@ -50,8 +50,8 @@ public:
     if(world){
       Mat3 cam_rot = rotation_matrix_yaw_pitch_roll(yaw, pitch, roll);
       for (uint32_t i = 0; i < RayListlen; i++) {
-        //RayList[i] = mat3_mul_vec3(cam_rot, RayList[i]);
-        //RayList[i] = normalize(RayList[i]);
+        ////RayList[i] = mat3_mul_vec3(cam_rot, RayList[i]);
+        ////RayList[i] = normalize(RayList[i]);
       }
     }
 
