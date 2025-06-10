@@ -14,8 +14,10 @@ public:
     }
 
     void GrayToBinary(uint8_t* img, uint8_t threshold = 63) {
-        for (size_t i = 0; i < _width*_height; i++) {
-            img[i] = (img[i] > threshold) ? 1 : 0;
+        uint8_t* end = img + _width * _height;
+        while (img < end) {
+            *img = (*img > threshold) ? 1 : 0;
+            ++img;
         }
     }
 
@@ -49,7 +51,9 @@ public:
                         xorResult += img[tmpline+i];
                     }
                 }
-                xorResult = (xorResult >= 16)||(xorResult==0) ? 0 : 1;
+                bool tmp_allone=(xorResult >= 16);
+                bool tmp_allzero=(xorResult==0);
+                xorResult = (tmp_allone|tmp_allzero) ? 0 : 1;
                 for (uint16_t j=0; j<block_width; j++){
                     size_t tmpline = tmp_block + j*_width + x;
                     for (uint16_t i=0; i<=block_width; i++) {
