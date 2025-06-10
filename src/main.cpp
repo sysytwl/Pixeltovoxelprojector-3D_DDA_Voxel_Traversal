@@ -15,7 +15,7 @@ void setup(){
     }
 
     int timecost = micros();
-    rm.init(1280,720,60);
+    rm.init(800,600,60);
     timecost = micros() - timecost;
     printf("time cost for init cam ray lut: %d\n", timecost);
 
@@ -30,7 +30,7 @@ void setup(){
     for (int i = 0; i < 1280 * 720; ++i) {
         fake_img[i] = i % 256;
     }
-    Imgp.init(1280,720);
+    Imgp.init(800,600);
 
     int img_timecost = micros();
     Imgp.YUV422ToGray(fake_img);
