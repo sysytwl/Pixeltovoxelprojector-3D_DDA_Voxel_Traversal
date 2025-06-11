@@ -8,8 +8,10 @@ public:
     }
 
     void YUV422ToGray(uint8_t* img) {
-        for (size_t i = 0; i < _width * _height; i++) {
-            img[i] = img[i] >> 4;
+        uint8_t* end = img + _width * _height;
+        while (img < end) {
+            *img >>= 4;
+            ++img;
         }
     }
 

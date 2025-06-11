@@ -38,3 +38,13 @@ time cost for edge dect: 117703
 PSRAM used: 3801600 bytes, free: 390491 bytes
 RAM used: 23600 bytes, free: 351976 bytes
 ```
+
+2. on esp32s3 8mb spiflash 720p
+```cpp
+PSRAM found. Size: 8386295 bytes
+time cost for init cam ray lut: 1556839
+time cost for gray trans: 48642
+time cost for binary: 45015
+time cost for dissolve: 213547
+time cost for edge dect: 145525
+```
