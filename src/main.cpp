@@ -107,6 +107,7 @@ void loop(){
 
     img_timecost = micros();
     Imgp.GrayToBinary(fake_img,127);
+    //Imgp.dissolve(fake_img);
     Imgp.edge_dection(fake_img, edge_img_out);
     img_timecost = micros() - img_timecost;
     printf("time cost for img process: %d\n", img_timecost);

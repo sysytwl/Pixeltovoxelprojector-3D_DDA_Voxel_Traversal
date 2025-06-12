@@ -22,17 +22,23 @@ public:
 
     void dissolve(uint8_t* img) {
         uint16_t block_width = _block_width;
-        for (uint16_t y=0; y<_height; y+=block_width){
-            for (uint16_t x=0; x<_width; x+=block_width){
+        for (uint16_t y = 0; y < _height; y += block_width) {
+            for (uint16_t x = 0; x < _width; x += block_width) {
                 uint8_t tmpResult = 1;
-                for (uint16_t j=0; j<block_width; j++) {//Compute OR for the 3x3 block centered at (x, y)
-                    for (uint16_t i=0; i<=block_width; i++){
-                        tmpResult = img[(y+j)*_width + (x+i)] & tmpResult;
+                uint16_t actual_block_h = ((y + block_width) > _height) ? (_height - y) : block_width;
+                uint16_t actual_block_w = ((x + block_width) > _width) ? (_width - x) : block_width;
+                // Compute AND for the block
+                for (uint16_t j = 0; j < actual_block_h; j++) {
+                    for (uint16_t i = 0; i < actual_block_w; i++) {
+                        tmpResult &= img[(y + j) * _width + (x + i)];
+                        if (tmpResult == 0) break; // Early exit if already zero
                     }
+                    if (tmpResult == 0) break;
                 }
-                for (uint16_t j=0; j<block_width; j++){
-                    for (uint16_t i=0; i<=block_width; i++) {
-                        img[(y+j)*_width + (x+i)] = tmpResult;
+                // Set all pixels in the block to tmpResult
+                for (uint16_t j = 0; j < actual_block_h; j++) {
+                    for (uint16_t i = 0; i < actual_block_w; i++) {
+                        img[(y + j) * _width + (x + i)] = tmpResult;
                     }
                 }
             }
