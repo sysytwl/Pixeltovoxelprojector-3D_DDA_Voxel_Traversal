@@ -84,6 +84,10 @@ void setup(){
     result_h = Imgp.getResultHeight();
     packed_size = Imgp.getResultSize();
     edge_img_out = (uint8_t*)ps_malloc(packed_size);
+    if (!edge_img_out) {
+        printf("Failed to allocate edge_img_out\n");
+        return;
+    }
     //rm.init(img_width, img_heigh,60);
     // Imgp.dissolve(fake_img);
     //printf("PSRAM used: %u bytes, free: %u bytes\n", ESP.getPsramSize() - ESP.getFreePsram(), ESP.getFreePsram());
@@ -103,38 +107,45 @@ void loop(){
 
     img_timecost = micros();
     Imgp.GrayToBinary(fake_img,127);
-    if (!edge_img_out) {
-        printf("Failed to allocate edge_img_out\n");
-        esp_camera_fb_return(fb);
-        return;
-    }
     Imgp.edge_dection(fake_img, edge_img_out);
     img_timecost = micros() - img_timecost;
     printf("time cost for img process: %d\n", img_timecost);
 
-    //--- Send packed edge image (already 1 bit per pixel) ---
-    // Send header
-    char header[64];
-    int header_len = snprintf(header, sizeof(header), "START OF IMG, %u, %u\n", result_w, result_h);
-    udp.beginPacket("255.255.255.255", UDP_PORT); // broadcast
-    udp.write((uint8_t*)header, header_len);
-    udp.endPacket();
+    //--- Pack binary image (1 bit per pixel) into bytes ---
+    size_t packed_size_to_send = (packed_size + 7) / 8;
+    uint8_t* packed_img = (uint8_t*)ps_malloc(packed_size_to_send);
+    if (packed_img) {
+        memset(packed_img, 0, packed_size_to_send);
+        for (size_t i = 0; i < packed_size; ++i) {
+            if (edge_img_out[i]) {
+                packed_img[i / 8] |= (1 << (7 - (i % 8)));
+            }
+        }
 
-    // Send packed image in chunks
-    const size_t CHUNK_SIZE = 1400; // UDP safe size
-    for (size_t sent = 0; sent < packed_size; sent += CHUNK_SIZE) {
-        size_t to_send = (packed_size - sent > CHUNK_SIZE) ? CHUNK_SIZE : (packed_size - sent);
-        udp.beginPacket("255.255.255.255", UDP_PORT);
-        udp.write(edge_img_out + sent, to_send);
+        // Send header
+        char header[64];
+        int header_len = snprintf(header, sizeof(header), "START OF IMG, %d, %d\n", result_w, result_h);
+        udp.beginPacket("255.255.255.255", UDP_PORT); // broadcast
+        udp.write((uint8_t*)header, header_len);
         udp.endPacket();
-        delay(2); // small delay to avoid packet loss
-    }
 
-    // Send footer
-    const char* footer = "END OF IMG\n";
-    udp.beginPacket("255.255.255.255", UDP_PORT);
-    udp.write((const uint8_t*)footer, strlen(footer));
-    udp.endPacket();
+        // Send packed image in chunks
+        const size_t CHUNK_SIZE = 1400; // UDP safe size
+        for (size_t sent = 0; sent < packed_size_to_send; sent += CHUNK_SIZE) {
+            size_t to_send = (packed_size_to_send - sent > CHUNK_SIZE) ? CHUNK_SIZE : (packed_size_to_send - sent);
+            udp.beginPacket("255.255.255.255", UDP_PORT);
+            udp.write(packed_img + sent, to_send);
+            udp.endPacket();
+            delay(2); // small delay to avoid packet loss
+        }
+
+        // Send footer
+        const char* footer = "END OF IMG\n";
+        udp.beginPacket("255.255.255.255", UDP_PORT);
+        udp.write((const uint8_t*)footer, strlen(footer));
+        udp.endPacket();
+    }
+    free(packed_img);
 
     esp_camera_fb_return(fb);
 }

@@ -8,7 +8,8 @@ public:
         _block_width = block_width;
         _result_width = (_width + _block_width - 1) / _block_width;
         _result_height = (_height + _block_width - 1) / _block_width;
-        _result_size = ((_result_width * _result_height) + 7) / 8; // in bytes, for packed binary
+        //_result_size = ((_result_width * _result_height) + 7) / 8; // in bytes, for packed binary
+        _result_size = _result_width * _result_height;
     }
 
     void GrayToBinary(uint8_t* img, uint8_t threshold = 63) {
@@ -44,8 +45,6 @@ public:
         uint16_t bw = _block_width;
         uint16_t out_w = _result_width;
         uint16_t out_h = _result_height;
-        // Clear output
-        memset(img_out, 0, _result_size);
         for (uint16_t by = 0; by < out_h; ++by) {
             for (uint16_t bx = 0; bx < out_w; ++bx) {
                 uint16_t y = by * bw;
@@ -62,11 +61,7 @@ public:
                 uint8_t edge = (sum == 0 || sum == block_size) ? 0 : 1;
                 // Pack edge into output
                 uint32_t out_idx = by * out_w + bx;
-                uint32_t byte_idx = out_idx / 8;
-                uint8_t bit_idx = out_idx % 8;
-                if (edge) {
-                    img_out[byte_idx] |= (1 << bit_idx);
-                }
+                img_out[out_idx] = edge;
             }
         }
     }
